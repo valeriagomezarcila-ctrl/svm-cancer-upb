@@ -34,8 +34,11 @@ st.markdown("""
 
 st.sidebar.header("Parámetros de Entrada (Características FNA)")
 input_values = []
-for name in feature_names:
-    val = st.sidebar.number_input(f"{name}", value=float(np.mean([0.0])))
+# Usamos el promedio real de cada columna del dataset en lugar de 0.0 por defecto
+default_values = X.mean(axis=0) 
+
+for i, name in enumerate(feature_names):
+    val = st.sidebar.number_input(f"{name}", value=float(default_values[i]))
     input_values.append(val)
 
 if st.button("Clasificar Muestra"):
