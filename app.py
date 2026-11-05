@@ -11,9 +11,9 @@ from sklearn.model_selection import train_test_split
 @st.cache_resource
 def train_model():
     data = load_breast_cancer()
-    X = data.data
+    X_df = pd.DataFrame(data.data, columns=data.feature_names)
     y = np.where(data.target == 0, 1, 0) # 1: Maligno, 0: Benigno
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X_df, y, test_size=0.2, random_state=42, stratify=y)
     
     # Pipeline con la mejor configuración (SVM RBF C=10)
     pipeline = Pipeline([
@@ -21,9 +21,9 @@ def train_model():
         ('svc', SVC(kernel='rbf', C=10, gamma='scale', probability=True, random_state=42))
     ])
     pipeline.fit(X_train, y_train)
-    return pipeline, data.feature_names
+    return pipeline, data.feature_names, X_df
 
-model, feature_names = train_model()
+model, feature_names, X_df = train_model()
 
 st.title("🩺 Prototipo Experimental de IA: Clasificación de Masas Mamarias")
 st.markdown("""
@@ -34,11 +34,11 @@ st.markdown("""
 
 st.sidebar.header("Parámetros de Entrada (Características FNA)")
 input_values = []
-# Usamos el promedio real de cada columna del dataset en lugar de 0.0 por defecto
-default_values = X.mean(axis=0) 
+# Usamos el promedio real de cada columna del dataset para que no arranquen en cero
+default_values = X_df.mean(axis=0)
 
 for i, name in enumerate(feature_names):
-    val = st.sidebar.number_input(f"{name}", value=float(default_values[i]))
+    val = st.sidebar.number_input(f"{name}", value=float(default_values[i]), format="%.4f")
     input_values.append(val)
 
 if st.button("Clasificar Muestra"):
